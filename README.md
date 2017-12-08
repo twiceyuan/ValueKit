@@ -18,8 +18,9 @@ dependencies {
 
 初始化（建议在 Application#onCreate）：
 
-    ValueKit.init(this)
-
+```kotlin
+ValueKit.init(this)
+```
 
 定义配置文件：
 
@@ -33,7 +34,17 @@ object Config {
 
     // 用户名
     var username by StringValue
+    
+    // 存储一个个人信息
+    var person by ObjectValue<Person>()
 }
+
+// Person 定义
+data class Person(
+        val name: String,
+        val email: String,
+        val accessTime: MutableList<Long> = ArrayList()
+) : Serializable
 ```
 
 使用单例对象读写数据：
@@ -43,18 +54,24 @@ Config.username = "twiceYuan"
 
 // 读取数据
 tv_name.text = Config.username
+
+// 读取对象信息
+Config.person?.let {
+    it.accessTime.add(System.currentTimeMillis())
+
+    // 更新需要重新赋值
+    Config.person = it
+}
 ```
 
 ## 支持类型
 
-类型名   | 委托对象
---------|--------
-Boolean | BooleanValue
-Integer | IntegerValue
-String  | StringValue
-Long    | LongValue
-Double  | DoubleValue
+类型名        | 委托对象
+-------------|--------
+Boolean      | BooleanValue
+Integer      | IntegerValue
+String       | StringValue
+Long         | LongValue
+Double       | DoubleValue
+Serializable | ObjectValue<T: Serializable>
 
-## Todo
-
-支持更多类型
