@@ -1,6 +1,7 @@
 package com.twiceyuan.valuekotsample
 
 import com.twiceyuan.valuekit.IntegerValue
+import com.twiceyuan.valuekit.ObjectValue
 import com.twiceyuan.valuekit.StringValue
 import com.twiceyuan.valuekit.ValueDir
 
@@ -17,4 +18,7 @@ object Config {
 
     // 用户名
     var username by StringValue
+
+    // 存储一个个人信息
+    var person by ObjectValue<Person>()
 }

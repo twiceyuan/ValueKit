@@ -49,6 +49,17 @@ object StringValue {
     }
 }
 
+class ObjectValue<Object: Serializable> {
+    operator fun <T : Any> getValue(t: T, property: KProperty<*>): Object? {
+        @Suppress("UNCHECKED_CAST")
+        return read(t, property.name) as Object?
+    }
+
+    operator fun <T : Any> setValue(t: T, property: KProperty<*>, newValue: Object?) {
+        write(t, property.name, newValue)
+    }
+}
+
 fun <T : Any> read(any: T, propertyName: String): Any? {
 
     val valueDirAnnotation = any.javaClass.getAnnotation(ValueDir::class.java)
@@ -80,6 +91,10 @@ object ValueKit {
 
     fun init(context: Context) {
         fileDir = context.filesDir
+    }
+
+    fun init(file: ValueDir) {
+        fileDir = fileDir
     }
 
     fun valueDir(dirName: String? = null): File = File(fileDir, dirName ?: defaultDirName).apply { mkdirs() }
