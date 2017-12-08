@@ -19,7 +19,14 @@ dependencies {
 初始化（建议在 Application#onCreate）：
 
 ```kotlin
-ValueKit.init(this)
+class App: Application() {
+    
+    override fun onCreate() {
+        super.onCreate()
+        ValueKit.init(this)
+        //...
+    }
+}
 ```
 
 定义配置文件：
@@ -49,18 +56,20 @@ data class Person(
 
 使用单例对象读写数据：
 ```kotlin
-// 缓存数据
-Config.username = "twiceYuan"
+fun someFunction() {
+    // 缓存数据
+    Config.username = "twiceYuan"
 
-// 读取数据
-tv_name.text = Config.username
+    // 读取数据
+    tv_name.text = Config.username
 
-// 读取对象信息
-Config.person?.let {
-    it.accessTime.add(System.currentTimeMillis())
+    // 读取对象信息
+    Config.person?.let {
+        it.accessTime.add(System.currentTimeMillis())
 
-    // 更新需要重新赋值
-    Config.person = it
+        // 更新需要重新赋值
+        Config.person = it
+    }
 }
 ```
 
