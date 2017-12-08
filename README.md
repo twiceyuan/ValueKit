@@ -5,6 +5,11 @@
 
 利用 Kotlin 的属性委托语法，可以使用更简单的配置来使用类似 SharedPreferences 的功能：
 
+初始化（建议在 Application#onCreate）：
+
+    ValueKit.init(this)
+
+
 定义配置文件：
 
 ```kotlin
@@ -28,3 +33,17 @@ Config.username = "twiceYuan"
 // 读取数据
 tv_name.text = Config.username
 ```
+
+## 支持类型
+
+类型名   | 委托对象
+--------|--------
+Boolean | BooleanValue
+Integer | IntegerValue
+String  | StringValue
+Long    | LongValue
+Double  | DoubleValue
+
+## Todo
+
+支持更多类型
