@@ -23,7 +23,17 @@ object Config {
 
     // 用户名
     var username by StringValue
+    
+    // 存储一个个人信息
+    var person by ObjectValue<Person>()
 }
+
+// Person 定义
+data class Person(
+        val name: String,
+        val email: String,
+        val accessTime: MutableList<Long> = ArrayList()
+) : Serializable
 ```
 
 使用单例对象读写数据：
@@ -33,6 +43,14 @@ Config.username = "twiceYuan"
 
 // 读取数据
 tv_name.text = Config.username
+
+// 读取对象信息
+Config.person?.let {
+    it.accessTime.add(System.currentTimeMillis())
+
+    // 更新需要重新赋值
+    Config.person = it
+}
 ```
 
 ## 支持类型
