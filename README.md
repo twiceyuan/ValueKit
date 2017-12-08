@@ -7,8 +7,9 @@
 
 初始化（建议在 Application#onCreate）：
 
-    ValueKit.init(this)
-
+```kotlin
+ValueKit.init(this)
+```
 
 定义配置文件：
 
@@ -36,14 +37,12 @@ tv_name.text = Config.username
 
 ## 支持类型
 
-类型名   | 委托对象
---------|--------
-Boolean | BooleanValue
-Integer | IntegerValue
-String  | StringValue
-Long    | LongValue
-Double  | DoubleValue
+类型名        | 委托对象
+-------------|--------
+Boolean      | BooleanValue
+Integer      | IntegerValue
+String       | StringValue
+Long         | LongValue
+Double       | DoubleValue
+Serializable | ObjectValue<T: Serializable>
 
-## Todo
-
-支持更多类型
