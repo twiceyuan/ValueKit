@@ -3,6 +3,17 @@
 
 ## Usage
 
+添加依赖
+```groovy
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    compile 'com.github.twiceyuan:ValueKit:master-SNAPSHOT'
+}
+```
+
 利用 Kotlin 的属性委托语法，可以使用更简单的配置来使用类似 SharedPreferences 的功能：
 
 初始化（建议在 Application#onCreate）：
