@@ -7,38 +7,30 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Config.username?.let {
-            tv_name.text = it
-        }
+        initViewContent()
 
         Config.username = "twiceYuan"
+        Config.launchCount = Config.launchCount ?: 0 + 1
 
-        if (Config.launchCount == null) {
-            Config.launchCount = 1
+        val person = Config.person
+        if (person != null) {
+            person.accessTime.add(System.currentTimeMillis())
+            Config.person = person
+        } else {
+            Config.person = Person(name = "Somebody", email = "somebody@example.com")
         }
+    }
 
-        Config.launchCount?.let {
-            tv_launch_count.text = "$it"
-            Config.launchCount = it + 1
-        }
-
-        Config.person?.let {
-            tv_person.text = "name: ${it.name}\nemail: ${it.email}\naccess count: ${it.accessTime.size}"
-            it.accessTime.add(System.currentTimeMillis())
-
-            Config.person = it
-        }
-
-        if (Config.person == null) {
-            Config.person = Person(
-                    name = "Somebody",
-                    email = "somebody@example.com"
-            )
-        }
+    @SuppressLint("SetTextI18n")
+    private fun initViewContent() {
+        tv_name.text = Config.username ?: "NULL"
+        tv_launch_count.text = Config.launchCount.toString()
+        tv_person.text = """|name: ${Config.person?.name}
+                            |email: ${Config.person?.email}
+                            |access count: ${Config.person?.accessTime?.size}""".trimMargin()
     }
 }
