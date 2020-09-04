@@ -1,20 +1,25 @@
 package com.twiceyuan.valuekotsample
 
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
+import com.twiceyuan.valuekit.DefaultRegistry
+import com.twiceyuan.valuekit.setupValueKitDefaultRegister
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        setupValueKitDefaultRegister(DefaultRegistry(applicationContext))
+
         setContentView(R.layout.activity_main)
 
         initViewContent()
 
         Config.username = "twiceYuan"
-        Config.launchCount = (Config.launchCount ?: 0) + 1
+        Config.counter1 = (Config.counter1 ?: 0) + 1
+        Config.counter2 = (Config.counter2 ?: 0) + 1
 
         Config.person = Config.person?.apply {
             accessTime.add(System.currentTimeMillis())
@@ -23,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initViewContent() {
         tv_name.text = Config.username ?: getString(R.string.empty)
-        tv_launch_count.text = Config.launchCount.toString()
+        tv_launch_count.text = Config.counter1.toString()
         tv_person.text = Config.person.toString()
     }
 }

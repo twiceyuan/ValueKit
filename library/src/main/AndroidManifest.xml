@@ -1,13 +1,2 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.twiceyuan.valuekit">
-
-    <application>
-
-        <provider
-            android:name=".Initializer"
-            android:authorities="${applicationId}.ValueKitInitializer"
-            android:exported="false" />
-
-    </application>
-
-</manifest>
+    package="com.twiceyuan.valuekit" />

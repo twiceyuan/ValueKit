@@ -13,8 +13,11 @@ object Config {
 
     private const val TAG = "Config"
 
-    // 启动次数
-    var launchCount by intValue(writeValueInterceptor = {
+    // 计数器 1
+    var counter1 by intValue()
+
+    // 计数器 2
+    var counter2 by intValue(writeValueInterceptor = {
         Log.i(TAG, "write launch count: $it");it
     })
 
