@@ -11,4 +11,12 @@ data class Person(
         val name: String,
         val email: String,
         val accessTime: MutableList<Long> = ArrayList()
-) : Serializable
+) : Serializable {
+
+    override fun toString(): String {
+        return """|name: ${Config.person?.name}
+                  |email: ${Config.person?.email}
+                  |access count: ${Config.person?.accessTime?.size}"""
+                .trimMargin()
+    }
+}

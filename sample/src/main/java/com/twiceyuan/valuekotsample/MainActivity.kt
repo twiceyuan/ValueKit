@@ -14,23 +14,16 @@ class MainActivity : AppCompatActivity() {
         initViewContent()
 
         Config.username = "twiceYuan"
-        Config.launchCount = Config.launchCount ?: 0 + 1
+        Config.launchCount = (Config.launchCount ?: 0) + 1
 
-        val person = Config.person
-        if (person != null) {
-            person.accessTime.add(System.currentTimeMillis())
-            Config.person = person
-        } else {
-            Config.person = Person(name = "Somebody", email = "somebody@example.com")
-        }
+        Config.person = Config.person?.apply {
+            accessTime.add(System.currentTimeMillis())
+        } ?: Person(name = "用户昵称", email = "somebody@example.com")
     }
 
-    @SuppressLint("SetTextI18n")
     private fun initViewContent() {
-        tv_name.text = Config.username ?: "NULL"
+        tv_name.text = Config.username ?: getString(R.string.empty)
         tv_launch_count.text = Config.launchCount.toString()
-        tv_person.text = """|name: ${Config.person?.name}
-                            |email: ${Config.person?.email}
-                            |access count: ${Config.person?.accessTime?.size}""".trimMargin()
+        tv_person.text = Config.person.toString()
     }
 }

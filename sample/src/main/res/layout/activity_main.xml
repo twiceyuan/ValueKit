@@ -6,22 +6,21 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="12dp"
-    tools:context="com.twiceyuan.valuekotsample.MainActivity"
-    tools:ignore="HardcodedText">
+    tools:context="com.twiceyuan.valuekotsample.MainActivity">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Config.username:"
+        android:text="@string/label_username"
         android:textColor="@color/colorPrimary"
-        android:textSize="14sp"/>
+        android:textSize="@dimen/label_text_size"/>
 
     <TextView
         android:id="@+id/tv_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="null"
-        android:textSize="16sp"/>
+        android:text="@string/empty"
+        android:textSize="@dimen/value_text_size"/>
 
     <Space
         android:layout_width="match_parent"
@@ -30,16 +29,16 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Config.launchCount:"
+        android:text="@string/config_launch_count"
         android:textColor="@color/colorPrimary"
-        android:textSize="14sp"/>
+        android:textSize="@dimen/label_text_size"/>
 
     <TextView
         android:id="@+id/tv_launch_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0"
-        android:textSize="16sp"/>
+        android:textSize="@dimen/value_text_size"/>
 
     <Space
         android:layout_width="match_parent"
@@ -48,16 +47,16 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Config.person:"
+        android:text="@string/config_person"
         android:textColor="@color/colorPrimary"
-        android:textSize="14sp"/>
+        android:textSize="@dimen/label_text_size"/>
 
     <TextView
         android:id="@+id/tv_person"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="null"
-        android:textSize="16sp"/>
+        android:text="@string/empty"
+        android:textSize="@dimen/value_text_size"/>
 
     <Space
         android:layout_width="match_parent"

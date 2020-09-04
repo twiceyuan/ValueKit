@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Value Kit Sample</string>
+    <string name="label_username">用户名</string>
+    <string name="empty"><![CDATA[<空>]]></string>
+    <string name="config_launch_count">启动次数</string>
+    <string name="config_person">用户数据 Bean</string>
 </resources>

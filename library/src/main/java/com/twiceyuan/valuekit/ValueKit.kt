@@ -1,114 +1,104 @@
 package com.twiceyuan.valuekit
 
-import android.content.Context
-import android.util.Log
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 import java.io.Serializable
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 /**
  * Created by twiceYuan on 2017/12/6.
- *
- * Config
  */
-private const val TAG = "ValueKit"
-private const val DEFAULT_DIR_NAME = "value_kit"
+abstract class ValueDelegate<DataType>(
+        private val readInterceptor: ValueInterceptor<DataType>,
+        private val writeValueInterceptor: ValueInterceptor<DataType>
+) {
 
+    private val Any.valueKitItem: ValueKitItem
+        get() = this::class.java.getAnnotation(ValueKitItem::class.java)
 
-object IntegerValue {
-    operator fun <T : Any> getValue(t: T, property: KProperty<*>): Int? = read(t, property.name)
-
-    operator fun <T : Any> setValue(t: T, property: KProperty<*>, newValue: Int?) {
-        write(t, property.name, newValue)
-    }
-}
-
-object BooleanValue {
-    operator fun <T : Any> getValue(t: T, property: KProperty<*>): Boolean? = read(t, property.name)
-
-    operator fun <T : Any> setValue(t: T, property: KProperty<*>, newValue: Boolean?) {
-        write(t, property.name, newValue)
-    }
-}
-
-object LongValue {
-    operator fun <T : Any> getValue(t: T, property: KProperty<*>): Long? = read(t, property.name)
-
-    operator fun <T : Any> setValue(t: T, property: KProperty<*>, newValue: Long?) {
-        write(t, property.name, newValue)
-    }
-}
-
-object DoubleValue {
-    operator fun <T : Any> getValue(t: T, property: KProperty<*>): Double? = read(t, property.name)
-
-    operator fun <T : Any> setValue(t: T, property: KProperty<*>, newValue: Double?) {
-        write(t, property.name, newValue)
-    }
-}
-
-object StringValue {
-    operator fun <T : Any> getValue(t: T, property: KProperty<*>): String? = read(t, property.name)
-
-    operator fun <T : Any> setValue(t: T, property: KProperty<*>, newValue: String?) {
-        write(t, property.name, newValue)
-    }
-}
-
-class ObjectValue<Object : Serializable> {
-    operator fun <T : Any> getValue(t: T, property: KProperty<*>): Object? = read(t, property.name)
-
-    operator fun <T : Any> setValue(t: T, property: KProperty<*>, newValue: Object?) {
-        write(t, property.name, newValue)
-    }
-}
-
-fun <T : Any, Data : Any> read(any: T, propertyName: String): Data? {
-
-    val valueDirAnnotation = any.javaClass.getAnnotation(ValueDir::class.java)
-
-    File(ValueKit.valueDir(valueDirAnnotation?.value), propertyName).apply {
-        return if (exists())
-            return try {
-                @Suppress("UNCHECKED_CAST")
-                ObjectInputStream(FileInputStream(this)).readObject() as Data
-            } catch (e: Exception) {
-                Log.e(TAG, e.toString())
-                null
+    private val Any.registry: ValueKitRegistry
+        get() {
+            val annotationClass = valueKitItem.registry
+            val registryInstance = valueKitRegistries[annotationClass]
+            if (registryInstance != null) {
+                return registryInstance
             }
-        else
-            null
+
+            synchronized(annotationClass.java) {
+                val instance = annotationClass.java.newInstance()
+                valueKitRegistries[annotationClass] = instance
+                return instance
+            }
+        }
+
+    operator fun getValue(any: Any, property: KProperty<*>): DataType? {
+        return readInterceptor(any.registry.read(any.valueKitItem.name, property.name, readInterceptor))
     }
-    return null
+
+    operator fun setValue(any: Any, property: KProperty<*>, newValue: DataType?) {
+        return any.registry.write(any.valueKitItem.name, property.name, writeValueInterceptor(newValue), writeValueInterceptor)
+    }
 }
 
-fun <T : Any> write(any: T, propertyName: String, newValue: Any?) {
+fun intValue(
+        readInterceptor: ValueInterceptor<Int> = { it },
+        writeValueInterceptor: ValueInterceptor<Int> = { it }
+) = IntegerValue(readInterceptor, writeValueInterceptor)
 
-    val valueDirAnnotation = any.javaClass.getAnnotation(ValueDir::class.java)
+fun longValue(
+        readInterceptor: ValueInterceptor<Long> = { it },
+        writeValueInterceptor: ValueInterceptor<Long> = { it }
+) = LongValue(readInterceptor, writeValueInterceptor)
 
-    File(ValueKit.valueDir(valueDirAnnotation?.value), propertyName).apply {
-        createNewFile()
-        ObjectOutputStream(FileOutputStream(this)).writeObject(newValue)
-    }
-}
+fun byteValue(
+        readInterceptor: ValueInterceptor<Byte> = { it },
+        writeValueInterceptor: ValueInterceptor<Byte> = { it }
+) = ByteValue(readInterceptor, writeValueInterceptor)
 
-object ValueKit {
+fun booleanValue(
+        readInterceptor: ValueInterceptor<Boolean> = { it },
+        writeValueInterceptor: ValueInterceptor<Boolean> = { it }
+) = BooleanValue(readInterceptor, writeValueInterceptor)
 
-    private lateinit var fileDir: File
+fun floatValue(
+        readInterceptor: ValueInterceptor<Float> = { it },
+        writeValueInterceptor: ValueInterceptor<Float> = { it }
+) = FloatValue(readInterceptor, writeValueInterceptor)
 
-    fun init(context: Context) {
-        fileDir = context.filesDir
-    }
+fun doubleValue(
+        readInterceptor: ValueInterceptor<Double> = { it },
+        writeValueInterceptor: ValueInterceptor<Double> = { it }
+) = DoubleValue(readInterceptor, writeValueInterceptor)
 
-    fun init(file: File) {
-        fileDir = file
-    }
+fun stringValue(
+        readInterceptor: ValueInterceptor<String> = { it },
+        writeValueInterceptor: ValueInterceptor<String> = { it }
+) = StringValue(readInterceptor, writeValueInterceptor)
 
-    fun valueDir(dirName: String? = null): File = File(fileDir, dirName ?: DEFAULT_DIR_NAME).apply { mkdirs() }
-}
+fun <T: Serializable> objectValue(
+        readInterceptor: ValueInterceptor<T> = { it },
+        writeValueInterceptor: ValueInterceptor<T> = { it }
+) = ObjectValue(readInterceptor, writeValueInterceptor)
 
-annotation class ValueDir(val value: String)
+private typealias Interceptor<T> = ValueInterceptor<T>
+
+class IntegerValue(i1: Interceptor<Int>, i2: Interceptor<Int>) : ValueDelegate<Int>(i1, i2)
+
+class LongValue(i1: Interceptor<Long>, i2: Interceptor<Long>) : ValueDelegate<Long>(i1, i2)
+
+class ByteValue(i1: Interceptor<Byte>, i2: Interceptor<Byte>) : ValueDelegate<Byte>(i1, i2)
+
+class BooleanValue(i1: Interceptor<Boolean>, i2: Interceptor<Boolean>) : ValueDelegate<Boolean>(i1, i2)
+
+class FloatValue(i1: Interceptor<Float>, i2: Interceptor<Float>) : ValueDelegate<Float>(i1, i2)
+
+class DoubleValue(i1: Interceptor<Double>, i2: Interceptor<Double>) : ValueDelegate<Double>(i1, i2)
+
+class StringValue(i1: Interceptor<String>, i2: Interceptor<String>) : ValueDelegate<String>(i1, i2)
+
+@Suppress("unused")
+class ObjectValue<Obj: Serializable>(i1: ValueInterceptor<Obj>, i2: ValueInterceptor<Obj>) : ValueDelegate<Obj>(i1, i2)
+
+annotation class ValueKitItem(
+        val name: String, //
+        val registry: KClass<out ValueKitRegistry> = SimpleInputOutputRegistry::class
+)
