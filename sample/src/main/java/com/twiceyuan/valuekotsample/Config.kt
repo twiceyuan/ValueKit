@@ -14,16 +14,16 @@ object Config {
     private const val TAG = "Config"
 
     // 计数器 1
-    var counter1 by intValue()
+    var counter1: Int? by valueKit()
 
     // 计数器 2
-    var counter2 by intValue(writeValueInterceptor = {
+    var counter2 by valueKit<Int>(writeValueInterceptor = {
         Log.i(TAG, "write launch count: $it");it
     })
 
     // 用户名
-    var username by stringValue(readInterceptor = { "Mr. $it" })
+    var username by valueKit<String>(readInterceptor = { "Mr. $it" })
 
     // 存储一个个人信息
-    var person by objectValue<Person>()
+    var person by valueKit<Person>()
 }

@@ -2,7 +2,7 @@ package com.twiceyuan.valuekotsample
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.twiceyuan.valuekit.DefaultRegistry
+import com.twiceyuan.valuekit.registry.SharedPreferencesRegistry
 import com.twiceyuan.valuekit.setupValueKitDefaultRegister
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setupValueKitDefaultRegister(DefaultRegistry(applicationContext))
+        setupValueKitDefaultRegister(SharedPreferencesRegistry(applicationContext))
 
         setContentView(R.layout.activity_main)
 
