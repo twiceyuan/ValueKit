@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Base64
 import android.util.Log
+import com.twiceyuan.valuekit.ValueKitLogger
 import com.twiceyuan.valuekit.ValueKitRegistry
 import java.io.*
 import kotlin.reflect.KClass
@@ -54,8 +55,8 @@ class SharedPreferencesRegistry(val context: Context) : ValueKitRegistry {
             val bi = ByteArrayInputStream(b)
             val si = ObjectInputStream(bi)
             si.readObject()
-        }.onFailure {
-            Log.e("SpDebug", it.message, it)
+        }.onFailure { e ->
+            ValueKitLogger { Log.e(it, e.message, e) }
         }.getOrNull()
     }
 
@@ -66,8 +67,8 @@ class SharedPreferencesRegistry(val context: Context) : ValueKitRegistry {
             so.writeObject(this)
             so.flush()
             Base64.encodeToString(bo.toByteArray(), Base64.URL_SAFE)
-        }.onFailure {
-            Log.e("SpDebug", it.message, it)
+        }.onFailure { e ->
+            ValueKitLogger { Log.e(it, e.message, e) }
         }.getOrNull()
     }
 

@@ -2,8 +2,9 @@ package com.twiceyuan.valuekotsample
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.twiceyuan.valuekit.ValueKitLogger
 import com.twiceyuan.valuekit.registry.SharedPreferencesRegistry
-import com.twiceyuan.valuekit.setupValueKitDefaultRegister
+import com.twiceyuan.valuekit.setupValueKitDefaultRegistry
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -11,7 +12,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setupValueKitDefaultRegister(SharedPreferencesRegistry(applicationContext))
+        ValueKitLogger.isEnable = true
+        setupValueKitDefaultRegistry(SharedPreferencesRegistry(applicationContext))
 
         setContentView(R.layout.activity_main)
 
@@ -29,6 +31,6 @@ class MainActivity : AppCompatActivity() {
     private fun initViewContent() {
         tv_name.text = Config.username ?: getString(R.string.empty)
         tv_launch_count.text = Config.counter1.toString()
-        tv_person.text = Config.person.toString()
+        tv_person.text = Config.person?.display() ?: getString(R.string.empty)
     }
 }
