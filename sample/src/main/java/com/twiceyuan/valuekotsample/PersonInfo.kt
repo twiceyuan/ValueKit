@@ -8,13 +8,13 @@ import com.twiceyuan.valuekit.*
  *
  * 项目持久化配置
  */
-@ValueKitItem(name = "config")
-object Config {
+@ValueKitItem(name = "person_info")
+object PersonInfo {
 
-    private const val TAG = "Config"
+    private const val TAG = "PersonInfo"
 
     // 计数器 1
-    var counter1: Int? by valueKit()
+    var counter1 by valueKit<Int>()
 
     // 计数器 2
     var counter2 by valueKit<Int>(writeValueInterceptor = {

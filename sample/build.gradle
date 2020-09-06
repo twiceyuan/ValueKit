@@ -28,7 +28,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.2.0'
-
-    // implementation 'com.github.twiceyuan:ValueKit:master-SNAPSHOT'
-    implementation project(':library')
+    implementation project(':valuekit')
+    implementation project(':valuekit-mmkv')
+    implementation 'com.tencent:mmkv:1.2.2'
 }

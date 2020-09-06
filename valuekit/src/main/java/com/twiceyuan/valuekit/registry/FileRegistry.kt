@@ -20,7 +20,7 @@ class FileRegistry(context: Context) : ValueKitRegistry {
     private fun valueDir(dirName: String? = null): File =
             File(file, dirName ?: DEFAULT_DIR_NAME).apply { mkdirs() }
 
-    override fun <Data : Any> read(group: String, propertyName: String, kClass: KClass<out Data>): Data? {
+    override fun <Data : Any> read(group: String, propertyName: String, dataType: KClass<out Data>): Data? {
         return runCatching {
             val file = File(valueDir(group), propertyName).inputStream()
             @Suppress("UNCHECKED_CAST")
@@ -30,7 +30,7 @@ class FileRegistry(context: Context) : ValueKitRegistry {
         }.getOrNull()
     }
 
-    override fun write(group: String, propertyName: String, newValue: Any?) {
+    override fun write(group: String, propertyName: String, newValue: Any?, dataType: KClass<*>) {
         File(valueDir(group), propertyName).apply {
             createNewFile()
             ObjectOutputStream(FileOutputStream(this)).writeObject(newValue)

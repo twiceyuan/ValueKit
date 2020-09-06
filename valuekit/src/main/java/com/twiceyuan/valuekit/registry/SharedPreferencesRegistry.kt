@@ -2,11 +2,8 @@ package com.twiceyuan.valuekit.registry
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Base64
-import android.util.Log
-import com.twiceyuan.valuekit.ValueKitLogger
-import com.twiceyuan.valuekit.ValueKitRegistry
-import java.io.*
+import com.twiceyuan.valuekit.*
+import java.io.Serializable
 import kotlin.reflect.KClass
 
 /**
@@ -25,10 +22,7 @@ class SharedPreferencesRegistry(val context: Context) : ValueKitRegistry {
 
     private val preferences = Preferences()
 
-    private inline fun <reified Type> KClass<*>.isAssignableFrom() =
-            Type::class.java.isAssignableFrom(java)
-
-    override fun <Data : Any> read(group: String, propertyName: String, kClass: KClass<out Data>): Data? {
+    override fun <Data : Any> read(group: String, propertyName: String, dataType: KClass<out Data>): Data? {
 
         val preference = preferences[group]
 
@@ -37,42 +31,19 @@ class SharedPreferencesRegistry(val context: Context) : ValueKitRegistry {
 
         @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
         return when {
-            kClass.isAssignableFrom<Int>() -> stringValue()?.toInt()
-            kClass.isAssignableFrom<Long>() -> stringValue()?.toLong()
-            kClass.isAssignableFrom<Byte>() -> stringValue()?.toByte()
-            kClass.isAssignableFrom<Double>() -> stringValue()?.toDouble()
-            kClass.isAssignableFrom<Float>() -> stringValue()?.toFloat()
-            kClass.isAssignableFrom<String>() -> stringValue()
-            kClass.isStringSetType -> preference.getStringSet(propertyName, null)
-            kClass.isAssignableFrom<Serializable>() -> stringValue()?.deserializeObj()
-            else -> throwNotSupportDataType(kClass)
+            dataType.isAssignableFrom<Int>() -> stringValue()?.toInt()
+            dataType.isAssignableFrom<Long>() -> stringValue()?.toLong()
+            dataType.isAssignableFrom<Byte>() -> stringValue()?.toByte()
+            dataType.isAssignableFrom<Double>() -> stringValue()?.toDouble()
+            dataType.isAssignableFrom<Float>() -> stringValue()?.toFloat()
+            dataType.isAssignableFrom<String>() -> stringValue()
+            dataType.isStringSetType -> preference.getStringSet(propertyName, null)
+            dataType.isAssignableFrom<Serializable>() -> deserializeObj(stringValue() ?: "")
+            else -> throwNotSupportDataType(dataType)
         } as? Data?
     }
 
-    private fun String.deserializeObj(): Any? {
-        return runCatching {
-            val b = Base64.decode(toByteArray(), Base64.URL_SAFE)
-            val bi = ByteArrayInputStream(b)
-            val si = ObjectInputStream(bi)
-            si.readObject()
-        }.onFailure { e ->
-            ValueKitLogger { Log.e(it, e.message, e) }
-        }.getOrNull()
-    }
-
-    private fun Any.serializeObj(): String? {
-        return runCatching {
-            val bo = ByteArrayOutputStream()
-            val so = ObjectOutputStream(bo)
-            so.writeObject(this)
-            so.flush()
-            Base64.encodeToString(bo.toByteArray(), Base64.URL_SAFE)
-        }.onFailure { e ->
-            ValueKitLogger { Log.e(it, e.message, e) }
-        }.getOrNull()
-    }
-
-    override fun write(group: String, propertyName: String, newValue: Any?) {
+    override fun write(group: String, propertyName: String, newValue: Any?, dataType: KClass<*>) {
         val preference = preferences[group]
 
         if (newValue == null) {
@@ -86,20 +57,18 @@ class SharedPreferencesRegistry(val context: Context) : ValueKitRegistry {
             preferenceEditor.apply()
         }
 
-        val kClass = newValue::class
-
         when {
-            kClass.isStoreByStringType -> writeValue {
+            dataType.isStoreByStringType -> writeValue {
                 putString(propertyName, newValue.toString())
             }
-            kClass.isStringSetType -> writeValue {
+            dataType.isStringSetType -> writeValue {
                 @Suppress("UNCHECKED_CAST")
                 putStringSet(propertyName, newValue as Set<String>)
             }
-            kClass.isAssignableFrom<Serializable>() -> writeValue {
-                putString(propertyName, newValue.serializeObj())
+            dataType.isAssignableFrom<Serializable>() -> writeValue {
+                putString(propertyName, serializeObj(newValue))
             }
-            else -> throwNotSupportDataType(kClass)
+            else -> throwNotSupportDataType(dataType)
         }
     }
 
@@ -123,7 +92,4 @@ class SharedPreferencesRegistry(val context: Context) : ValueKitRegistry {
             val typeParam = typeParameters.getOrNull(0) as? KClass<*>
             return typeParam?.isAssignableFrom<String>() == true
         }
-
-    private fun throwNotSupportDataType(kClass: KClass<*>): Nothing =
-            throw UnsupportedOperationException("This type is unsupported: ${kClass.qualifiedName}")
 }

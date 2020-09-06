@@ -1,8 +1,12 @@
 package com.twiceyuan.valuekit
 
+import android.util.Base64
 import android.util.Log
 import com.twiceyuan.valuekit.registry.DefaultRegistry
-import java.lang.IllegalStateException
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
@@ -46,9 +50,14 @@ class ValueDelegate<DataType>(
     }
 
     private fun throwNotSetupDefaultRegistry(): Nothing {
-        throw IllegalStateException("Default registry not setup, please call the setupValueKitDefaultRegister to set a default registry.")
+        throw IllegalStateException("Default registry not setup, please call the setupValueKitDefaultRegistry to set a default registry.")
     }
 }
+
+fun ValueKitRegistry.throwNotSupportDataType(kClass: KClass<*>): Nothing =
+        throw UnsupportedOperationException("This type is unsupported: ${kClass.qualifiedName}")
+
+inline fun <reified Type> KClass<*>.isAssignableFrom() = Type::class.java.isAssignableFrom(java)
 
 inline operator fun <reified DataType : Any> ValueDelegate<DataType>.getValue(target: Any, property: KProperty<*>): DataType? {
     val rawValue = target.registry.read(target.kitItem.name, property.name, DataType::class)
@@ -71,7 +80,7 @@ inline operator fun <reified DataType : Any> ValueDelegate<DataType>.setValue(ta
     // 只在日志打开时获取上一次的值
     val previousValue = Logger.exec { target.registry.read(target.kitItem.name, property.name, DataType::class) }
     val finalValue = writeInterceptor(newValue)
-    target.registry.write(target.kitItem.name, property.name, writeInterceptor(newValue))
+    target.registry.write(target.kitItem.name, property.name, writeInterceptor(newValue), DataType::class)
     Logger.i {
         """
             |write action occurred
@@ -103,18 +112,53 @@ annotation class ValueKitItem(
 )
 
 /**
- * 值拦截器，可对值进行一层拦截
+ * Value 序列化和反序列的接口，实现该接口可作为一个 ValueKit 的序列化实现
  */
 interface ValueKitRegistry {
 
-    fun <Data : Any> read(group: String, propertyName: String, kClass: KClass<out Data>): Data?
+    /**
+     * 读取一个值
+     * [Data] 值的类型
+     * [group] 该值对应的 group 分组，一般对应 [ValueKitItem.name]
+     * [dataType] 数据的 KClass 类型
+     */
+    fun <Data : Any> read(group: String, propertyName: String, dataType: KClass<out Data>): Data?
 
-    fun write(group: String, propertyName: String, newValue: Any?)
+    /**
+     * 写入一个值
+     *
+     * [group] 该值对应的 group 分组，一般对应 [ValueKitItem.name]
+     */
+    fun write(group: String, propertyName: String, newValue: Any?, dataType: KClass<*>)
 }
 
 internal object Registry {
     var defaultRegistry: ValueKitRegistry? = null
     val cache = mutableMapOf<KClass<out ValueKitRegistry>, ValueKitRegistry?>()
+}
+
+fun ValueKitRegistry.deserializeObj(base64: String?): Any? {
+    base64 ?: return null
+    return base64.runCatching {
+        val b = Base64.decode(this.toByteArray(), Base64.URL_SAFE)
+        val bi = ByteArrayInputStream(b)
+        val si = ObjectInputStream(bi)
+        si.readObject()
+    }.onFailure { e ->
+        ValueKitLogger { Log.e(it, e.message, e) }
+    }.getOrNull()
+}
+
+fun ValueKitRegistry.serializeObj(obj: Any): String? {
+    return obj.runCatching {
+        val bo = ByteArrayOutputStream()
+        val so = ObjectOutputStream(bo)
+        so.writeObject(this)
+        so.flush()
+        Base64.encodeToString(bo.toByteArray(), Base64.URL_SAFE)
+    }.onFailure { e ->
+        ValueKitLogger { Log.e(it, e.message, e) }
+    }.getOrNull()
 }
 
 /**
@@ -124,30 +168,3 @@ fun setupValueKitDefaultRegistry(registry: ValueKitRegistry) {
     Registry.defaultRegistry = registry
     Logger.i { "[Setup registry => ${registry::class.qualifiedName}]" }
 }
-
-object ValueKitLogger {
-    var isEnable = false
-    private const val DEFAULT_TAG = "ValueKitLogger"
-
-    operator fun invoke(action: (defaultTag: String) -> Unit) {
-        if (isEnable) {
-            action(DEFAULT_TAG)
-        }
-    }
-
-    fun <T> exec(action: () -> T): T? {
-        return if (isEnable) {
-            action()
-        } else {
-            null
-        }
-    }
-
-    fun v(tr: Throwable? = null, m: () -> String) = exec { Log.v(DEFAULT_TAG, m(), tr) }
-    fun d(tr: Throwable? = null, m: () -> String) = exec { Log.d(DEFAULT_TAG, m(), tr) }
-    fun i(tr: Throwable? = null, m: () -> String) = exec { Log.i(DEFAULT_TAG, m(), tr) }
-    fun w(tr: Throwable? = null, m: () -> String) = exec { Log.w(DEFAULT_TAG, m(), tr) }
-    fun e(tr: Throwable? = null, m: () -> String) = exec { Log.e(DEFAULT_TAG, m(), tr) }
-}
-
-internal typealias Logger = ValueKitLogger
