@@ -1,4 +1,7 @@
 # ValueKit
+
+[![](https://jitpack.io/v/twiceyuan/ValueKit.svg)](https://jitpack.io/#twiceyuan/ValueKit)
+
 使用 Kotlin 属性委托实现的基于文件的 Key-Value 持久化工具
 
 ## Usage
@@ -10,7 +13,10 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.twiceyuan:ValueKit:master-SNAPSHOT'
+    // 主模块
+    implementation 'com.github.twiceyuan.ValueKit:valuekit:master-SNAPSHOT'
+    // MMKV 适配
+    implementation 'com.github.twiceyuan.ValueKit:valuekit-mmkv:master-SNAPSHOT'
 }
 ```
 
